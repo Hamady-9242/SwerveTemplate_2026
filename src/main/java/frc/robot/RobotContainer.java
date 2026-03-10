@@ -35,7 +35,10 @@ public class RobotContainer {
 
     /* Controllers */
     private final Joystick driver = new Joystick(0);
-    private final XboxController ctlDriver = new XboxController(0);
+    private final XboxController ctlDriver = new XboxController(0)
+        .configAxisDeadzone(0.1)
+        .configXAxisInverted(true)
+        .configYAxisInverted(true);
 
    /* Driver Controls */
 	private final int translationAxis = 1;
@@ -62,9 +65,9 @@ public class RobotContainer {
     private final Trigger btnDynamicLock = new Trigger(ctlDriver::getXButton);
     private final Trigger btnDampen = new Trigger(ctlDriver::getRightBumperButton);
 
-    private final Supplier<Double> axsDriver_Translation = () -> -scaleInput(ctlDriver.getLeftX(), InputScale.CUBED);
-    private final Supplier<Double> axsDriver_Strafe = ctlDriver::getLeftY;
-    private final Supplier<Double> axsDriver_Rotation = ctlDriver::getRightX;
+    private final Supplier<Double> axsDriver_Translation = () -> scaleInput(ctlDriver.getLeftY(), InputScale.CUBED);
+    private final Supplier<Double> axsDriver_Strafe = () -> scaleInput(ctlDriver.getLeftX(), InputScale.CUBED);
+    private final Supplier<Double> axsDriver_Rotation = () -> scaleInput(ctlDriver.getRightX(), InputScale.CUBED);
 
     /* Subsystems */
     private final PoseEstimator s_PoseEstimator = new PoseEstimator();
@@ -80,10 +83,10 @@ public class RobotContainer {
             new SwerveCommand(
                 s_Swerve, 
                 () -> axsDriver_Translation.get(), 
-                () -> scaleInput(-driver.getRawAxis(strafeAxis), InputScale.CUBED), 
-                () -> scaleInput(-driver.getRawAxis(rotationAxis), InputScale.STANDARD), 
-                () -> robotCentric.getAsBoolean(),
-                () -> dampen.getAsBoolean(),
+                () -> axsDriver_Strafe.get(), 
+                () -> axsDriver_Rotation.get(), 
+                () -> !btnRobotCentric.getAsBoolean(),
+                () -> !btnDampen.getAsBoolean(),
                 () -> 0 // Dynamic heading placeholder
             )
         );
@@ -101,13 +104,6 @@ public class RobotContainer {
         //Auto chooser
         autoChooser = AutoBuilder.buildAutoChooser("New Auto"); // Default auto will be `Commands.none()`
         SmartDashboard.putData("Auto Mode", autoChooser);
-    }
-
-    //FIXME: Do better input scaling
-    @SuppressWarnings("unused")
-    private double scaleInput(double inputValue, double powerValue) {
-        double sign = 1.0; //inputValue < 0.0 ? -1.0 : 1.0;
-        return sign * Math.pow(inputValue, powerValue);
     }
 
     //TODO: Comments for scaleInput()
@@ -131,18 +127,18 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         /* Driver Buttons */
-        zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
+        btnZeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
 
     //Heading lock bindings
-        forwardHold.onTrue(
+        btnForwardHold.onTrue(
             new InstantCommand(() -> States.driveState = States.DriveStates.forwardHold)).onFalse(
             new InstantCommand(() -> States.driveState = States.DriveStates.standard)
         );
-        backwardHold.onTrue(
+        btnBackwardHold.onTrue(
             new InstantCommand(() -> States.driveState = States.DriveStates.backwardHold)).onFalse(
             new InstantCommand(() -> States.driveState = States.DriveStates.standard)
         );
-        DynamicLock.onTrue(
+        btnDynamicLock.onTrue(
             new InstantCommand(() -> States.driveState = States.DriveStates.DynamicLock)).onFalse(
             new InstantCommand(() -> States.driveState = States.DriveStates.standard)
         );
