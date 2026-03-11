@@ -1,11 +1,5 @@
 package frc.robot.subsystems;
 
-import frc.robot.Constants;
-
-
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 //import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -13,7 +7,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.SwerveConstants;
 
 public class PoseEstimator extends SubsystemBase{
     public SwerveDrivePoseEstimator sEstimator;
@@ -23,7 +21,7 @@ public class PoseEstimator extends SubsystemBase{
 
     public PoseEstimator(){
         sEstimator = new SwerveDrivePoseEstimator(
-            Constants.Swerve.swerveKinematics, 
+            SwerveConstants.swerveKinematics, 
             new Rotation2d(), 
             new SwerveModulePosition[] {
                 new SwerveModulePosition(),

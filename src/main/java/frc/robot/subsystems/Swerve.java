@@ -17,20 +17,21 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.hawklib.dashboard.DashboardValue;
 import frc.robot.Constants;
-import frc.robot.SwerveMod;
+import frc.robot.Constants.SwerveConstants;
+import frc.robot.SwerveModule;
 
 public class Swerve extends SubsystemBase {
     private PoseEstimator s_PoseEstimator = new PoseEstimator();
 
     public SwerveDriveOdometry swerveOdometry;
-    public SwerveMod[] mSwerveMods;
+    public SwerveModule[] mSwerveModules;
     public Pigeon2 gyro;
     public RobotConfig config;
     private Field2d field = new Field2d();
@@ -38,8 +39,16 @@ public class Swerve extends SubsystemBase {
     private NetworkTable tblSwerve = NetworkTableInstance.getDefault().getTable("Swerve");
     private NetworkTable tblModules = tblSwerve.getSubTable("Modules");
 
-    private NetworkTableEntry entGyro = tblSwerve.getEntry("Gyro");
-    private NetworkTableEntry entHeading = tblSwerve.getEntry("Heading");
+    private final String[] MODULE_NAMES = {"Front Left", "Front Right", "Back Left", "Back Right"};
+
+    //private NetworkTableEntry dshGyro = tblSwerve.getEntry("Gyro");
+    //private NetworkTableEntry dshHeading = tblSwerve.getEntry("Heading");
+
+    @SuppressWarnings("unused")
+    private final DashboardValue<Double> dshGyro = new DashboardValue<Double>(tblSwerve, "Gyro", () -> getGyroYaw().getDegrees());
+    
+    @SuppressWarnings("unused")
+    private final DashboardValue<Double> dshHeading = new DashboardValue<Double>(tblSwerve, "Heading", () -> getHeading().getDegrees());
 
     public Swerve(PoseEstimator s_PoseEstimator) {
         this.s_PoseEstimator = s_PoseEstimator;
@@ -48,21 +57,21 @@ public class Swerve extends SubsystemBase {
             Constants.AutoConstants.ROBOT_MASS_KG,
             Constants.AutoConstants.ROBOT_MOI,
             Constants.AutoConstants.moduleConfig,
-            Constants.Swerve.trackWidth);
+            SwerveConstants.trackWidth);
 
         //FIXME: Move pigeon instance out of Swerve?
-        gyro = new Pigeon2(Constants.Swerve.pigeonID);
+        gyro = new Pigeon2(SwerveConstants.pigeonID);
         gyro.getConfigurator().apply(new Pigeon2Configuration());
         gyro.setYaw(0);
 
-        mSwerveMods = new SwerveMod[] {
-            new SwerveMod(0, Constants.Swerve.Mod0.constants),
-            new SwerveMod(1, Constants.Swerve.Mod1.constants),
-            new SwerveMod(2, Constants.Swerve.Mod2.constants),
-            new SwerveMod(3, Constants.Swerve.Mod3.constants)
+        mSwerveModules = new SwerveModule[] {
+            new SwerveModule(0, SwerveConstants.FrontLeftModule.constants),
+            new SwerveModule(1, SwerveConstants.FrontRightModule.constants),
+            new SwerveModule(2, SwerveConstants.BackLeftModule.constants),
+            new SwerveModule(3, SwerveConstants.BackRightModule.constants)
         };
 
-        swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getGyroYaw(), getModulePositions());
+        swerveOdometry = new SwerveDriveOdometry(SwerveConstants.swerveKinematics, getGyroYaw(), getModulePositions());
         System.out.println(getPose().getX());
 
 
@@ -98,7 +107,7 @@ public class Swerve extends SubsystemBase {
 
     public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         SwerveModuleState[] swerveModuleStates =
-            Constants.Swerve.swerveKinematics.toSwerveModuleStates(
+            SwerveConstants.swerveKinematics.toSwerveModuleStates(
                 fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
                                     translation.getX(), 
                                     translation.getY(), 
@@ -111,19 +120,19 @@ public class Swerve extends SubsystemBase {
                                     rotation
                                 )
             );
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed);
 
-        for(SwerveMod mod : mSwerveMods){
-            mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
+        for(SwerveModule module: mSwerveModules){
+            module.setDesiredState(swerveModuleStates[module.moduleNumber], isOpenLoop);
         }
     }    
 
     /* Used by Pathplanner autobuilder */
     public void setModuleStates(SwerveModuleState[] desiredStates) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.maxSpeed);
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, SwerveConstants.maxSpeed);
         
-        for(SwerveMod mod : mSwerveMods){
-            mod.setDesiredState(desiredStates[mod.moduleNumber], true);
+        for(SwerveModule module: mSwerveModules){
+            module.setDesiredState(desiredStates[module.moduleNumber], true);
         }
     }    
 
@@ -137,27 +146,27 @@ public class Swerve extends SubsystemBase {
 
     public SwerveModuleState[] getModuleStates(){
         SwerveModuleState[] states = new SwerveModuleState[4];
-        for(SwerveMod mod : mSwerveMods){
-            states[mod.moduleNumber] = mod.getState();
+        for(SwerveModule module: mSwerveModules){
+            states[module.moduleNumber] = module.getState();
         }
         return states;
     }
 
     public SwerveModulePosition[] getModulePositions(){
         SwerveModulePosition[] positions = new SwerveModulePosition[4];
-        for(SwerveMod mod : mSwerveMods){
-            positions[mod.moduleNumber] = mod.getPosition();
+        for(SwerveModule module: mSwerveModules){
+            positions[module.moduleNumber] = module.getPosition();
         }
         return positions;
     }
 
     public ChassisSpeeds getRobotRelativeSpeeds(){
-        return Constants.Swerve.swerveKinematics.toChassisSpeeds(getModuleStates());
+        return SwerveConstants.swerveKinematics.toChassisSpeeds(getModuleStates());
     }
 
     public void driveRobotRelative(ChassisSpeeds speeds){
-        SwerveModuleState[] states = Constants.Swerve.swerveKinematics.toSwerveModuleStates(speeds);
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, Constants.Swerve.maxSpeed);
+        SwerveModuleState[] states = SwerveConstants.swerveKinematics.toSwerveModuleStates(speeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, SwerveConstants.maxSpeed);
         setModuleStates(states);
     }
 
@@ -178,8 +187,8 @@ public class Swerve extends SubsystemBase {
     }
 
     public void resetModulesToAbsolute(){
-        for(SwerveMod mod : mSwerveMods){
-            mod.resetToAbsolute();
+        for(SwerveModule module : mSwerveModules){
+            module.resetToAbsolute();
         }
     }
 
@@ -188,24 +197,11 @@ public class Swerve extends SubsystemBase {
         swerveOdometry.update(getGyroYaw(), getModulePositions()); 
         s_PoseEstimator.updateSwerve(getGyroYaw(), getModulePositions());
         field.setRobotPose(getPose());
-
-        //FIXME: Remove Smartdashboard interfaces
-        SmartDashboard.putNumber("Get Gyro", getGyroYaw().getDegrees());
-        SmartDashboard.putNumber("Get Heading", getHeading().getDegrees());
-
-        for(SwerveMod mod : mSwerveMods){
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " CANcoder", mod.getCANcoder().getDegrees());
-            SmartDashboard.putNumber("Mod " + mod.moduleNumber + " Angle", mod.getPosition().angle.getDegrees());
-        }
-    
-        //Update Dashboard Values
-        entGyro.setDouble(getGyroYaw().getDegrees());    
-        entHeading.setDouble(getHeading().getDegrees());
         
-        for(SwerveMod mod : mSwerveMods) {
-            NetworkTable tblMod = tblModules.getSubTable("Mod " + mod.moduleNumber);
-            tblMod.getEntry("CANcoder").setDouble(mod.getCANcoder().getDegrees());
-            tblMod.getEntry("Angle").setDouble(mod.getPosition().angle.getDegrees());
+        for(SwerveModule module : mSwerveModules) {
+            NetworkTable tblmodule= tblModules.getSubTable("Module [" + MODULE_NAMES[module.moduleNumber] + "]");
+            tblmodule.getEntry("CANcoder").setDouble(module.getCANcoder().getDegrees());
+            tblmodule.getEntry("Angle").setDouble(module.getPosition().angle.getDegrees());
         }
     }
 }

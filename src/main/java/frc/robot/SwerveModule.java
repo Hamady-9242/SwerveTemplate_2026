@@ -16,11 +16,12 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.util.swerveUtil.CTREModuleState;
 import frc.lib.util.swerveUtil.SwerveModuleConstants;
+import frc.robot.Constants.SwerveConstants;
 
 /**
  * a Swerve Modules using REV Robotics motor controllers and CTRE CANcoder absolute encoders.
  */
-public class SwerveMod{
+public class SwerveModule{
     private HardwareConfigs hardwareConfigs;
 
     public int moduleNumber;
@@ -34,7 +35,7 @@ public class SwerveMod{
 
     private CANcoder angleEncoder;
 
-    public SwerveMod(int moduleNumber, SwerveModuleConstants moduleConstants)
+    public SwerveModule(int moduleNumber, SwerveModuleConstants moduleConstants)
     {
         this.hardwareConfigs = Robot.hardwareConfigs;
         this.moduleNumber = moduleNumber;
@@ -80,7 +81,7 @@ public class SwerveMod{
        
         if(isOpenLoop)
         {
-            double percentOutput = desiredState.speedMetersPerSecond / Constants.Swerve.maxSpeed;
+            double percentOutput = desiredState.speedMetersPerSecond / SwerveConstants.maxSpeed;
             mDriveMotor.set(percentOutput);
             return;
         }
@@ -93,7 +94,7 @@ public class SwerveMod{
     }
 
     private void setAngle(SwerveModuleState desiredState) {
-       if(Math.abs(desiredState.speedMetersPerSecond) <= (Constants.Swerve.maxSpeed * 0.01))
+       if(Math.abs(desiredState.speedMetersPerSecond) <= (SwerveConstants.maxSpeed * 0.01))
        {
         mAngleMotor.stopMotor();
         return;
