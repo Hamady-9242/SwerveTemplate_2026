@@ -33,12 +33,14 @@ public class RobotContainer {
         .configYAxisInverted(true);
 
 
-    //Replacement Triggers
-    private final Trigger btnZeroGyro = new Trigger(ctlDriver::getYButton);
+    //Driver Button Mapping
+    private final Trigger btnZeroGyro = new Trigger(ctlDriver::getStartButton)
+                                            .and(ctlDriver::getBackButton);
     private final Trigger btnFieldCentric = new Trigger(ctlDriver::getLeftBumperButton);
 
     private final Trigger btnDriver_HighSpeed = new Trigger(ctlDriver::getRightBumperButton);
 
+    //Driver Axis Mapping
     private final Supplier<Double> axsDriver_Translation = () -> squareInput(ctlDriver.getLeftY());
     private final Supplier<Double> axsDriver_Strafe = () -> squareInput(ctlDriver.getLeftX());
     private final Supplier<Double> axsDriver_Rotation = () -> squareInput(ctlDriver.getRightX());
@@ -47,7 +49,7 @@ public class RobotContainer {
 
     /* Subsystems */
     private final PoseEstimator s_PoseEstimator = new PoseEstimator();
-    private final Swerve s_Swerve = new Swerve(s_PoseEstimator);
+    private final Swerve CHASSIS = new Swerve(s_PoseEstimator);
     //private final Vision s_Vision = new Vision(s_PoseEstimator);
 
     /* AutoChooser */
@@ -55,9 +57,9 @@ public class RobotContainer {
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
-        s_Swerve.setDefaultCommand(
+        CHASSIS.setDefaultCommand(
             new SwerveCommand(
-                s_Swerve, 
+                CHASSIS, 
                 () -> axsDriver_Translation.get() * SPEED_MULT.get(), 
                 () -> axsDriver_Strafe.get() * SPEED_MULT.get(), 
                 () -> axsDriver_Rotation.get() * SPEED_MULT.get(), 
@@ -100,7 +102,7 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         /* Driver Buttons */
-        btnZeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroHeading()));
+        btnZeroGyro.onTrue(new InstantCommand(() -> CHASSIS.zeroHeading()));
     }
 
     /**

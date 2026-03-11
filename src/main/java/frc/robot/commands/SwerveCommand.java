@@ -20,9 +20,9 @@ public class SwerveCommand extends Command {
     private PIDController rotationController;
     
 
-    public SwerveCommand(Swerve s_Swerve, DoubleSupplier translationSup, DoubleSupplier strafeSup, DoubleSupplier rotationSup, BooleanSupplier robotCentricSup, DoubleSupplier dynamicHeadingSup) {
-        this.CHASSIS = s_Swerve;
-        addRequirements(s_Swerve);
+    public SwerveCommand(Swerve chassis, DoubleSupplier translationSup, DoubleSupplier strafeSup, DoubleSupplier rotationSup, BooleanSupplier robotCentricSup, DoubleSupplier dynamicHeadingSup) {
+        this.CHASSIS = chassis;
+        addRequirements(chassis);
 
         rotationController = new PIDController(SwerveConstants.HeadingKP, SwerveConstants.HeadingKI, SwerveConstants.HeadingKD );
         rotationController.enableContinuousInput(-Math.PI, Math.PI);
