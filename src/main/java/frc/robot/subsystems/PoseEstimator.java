@@ -17,7 +17,6 @@ public class PoseEstimator extends SubsystemBase{
     public SwerveDrivePoseEstimator sEstimator;
     public TimeInterpolatableBuffer<Double> turretYawBuffer = TimeInterpolatableBuffer.createDoubleBuffer(1.0);
     public TimeInterpolatableBuffer<Double> gyroYawBuffer = TimeInterpolatableBuffer.createDoubleBuffer(1.0);
-    public Pose2d visionPose = new Pose2d();
 
     public PoseEstimator(){
         sEstimator = new SwerveDrivePoseEstimator(

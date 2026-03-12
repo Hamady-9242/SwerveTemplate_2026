@@ -11,7 +11,7 @@ import frc.robot.subsystems.Swerve;
 
 
 public class SwerveCommand extends Command {    
-    private final Swerve CHASSIS;    
+    private final Swerve sysSwerve;    
     private DoubleSupplier translationSup;
     private DoubleSupplier strafeSup;
     private DoubleSupplier rotationSup;
@@ -20,9 +20,9 @@ public class SwerveCommand extends Command {
     private PIDController rotationController;
     
 
-    public SwerveCommand(Swerve chassis, DoubleSupplier translationSup, DoubleSupplier strafeSup, DoubleSupplier rotationSup, BooleanSupplier robotCentricSup, DoubleSupplier dynamicHeadingSup) {
-        this.CHASSIS = chassis;
-        addRequirements(chassis);
+    public SwerveCommand(Swerve sysSwerve, DoubleSupplier translationSup, DoubleSupplier strafeSup, DoubleSupplier rotationSup, BooleanSupplier robotCentricSup, DoubleSupplier dynamicHeadingSup) {
+        this.sysSwerve = sysSwerve;
+        addRequirements(sysSwerve);
 
         rotationController = new PIDController(SwerveConstants.HeadingKP, SwerveConstants.HeadingKI, SwerveConstants.HeadingKD );
         rotationController.enableContinuousInput(-Math.PI, Math.PI);
@@ -52,7 +52,7 @@ public class SwerveCommand extends Command {
         rotationVal = rotationVal * SwerveConstants.maxAngularVelocity;
 
         /* Drive */
-        CHASSIS.drive(
+        sysSwerve.drive(
             new Translation2d(translationVal, strafeVal).times(SwerveConstants.maxSpeed), 
             rotationVal,
             !robotCentricSup.getAsBoolean(), 

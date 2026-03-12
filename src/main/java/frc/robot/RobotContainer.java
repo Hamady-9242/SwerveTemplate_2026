@@ -49,7 +49,7 @@ public class RobotContainer {
 
     /* Subsystems */
     private final PoseEstimator s_PoseEstimator = new PoseEstimator();
-    private final Swerve CHASSIS = new Swerve(s_PoseEstimator);
+    private final Swerve sysSwerve = new Swerve(s_PoseEstimator);
     //private final Vision s_Vision = new Vision(s_PoseEstimator);
 
     /* AutoChooser */
@@ -57,9 +57,9 @@ public class RobotContainer {
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
-        CHASSIS.setDefaultCommand(
+        sysSwerve.setDefaultCommand(
             new SwerveCommand(
-                CHASSIS, 
+                sysSwerve, 
                 () -> axsDriver_Translation.get() * SPEED_MULT.get(), 
                 () -> axsDriver_Strafe.get() * SPEED_MULT.get(), 
                 () -> axsDriver_Rotation.get() * SPEED_MULT.get(), 
@@ -102,7 +102,7 @@ public class RobotContainer {
      */
     private void configureButtonBindings() {
         /* Driver Buttons */
-        btnZeroGyro.onTrue(new InstantCommand(() -> CHASSIS.zeroHeading()));
+        btnZeroGyro.onTrue(new InstantCommand(() -> sysSwerve.zeroHeading()));
     }
 
     /**
